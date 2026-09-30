@@ -7,4 +7,4 @@ class Customer:
     name: str
     email: str
     lifetime_spent: Decimal
-    id: int
+    id: int | None = None
