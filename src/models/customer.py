@@ -6,5 +6,5 @@ from decimal import Decimal
 class Customer:
     name: str
     email: str
-    lifetime_spent: Decimal
+    lifetime_spent: Decimal = Decimal("0.00")
     id: int | None = None
