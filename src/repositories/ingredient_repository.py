@@ -19,12 +19,12 @@ class IngredientRepository:
     def get_all_ingredients(self) -> list[Ingredient]:
         return list(self._ingredients)
     
-    def update_ingredient(self, updated_ingredient: Ingredient) -> bool:
+    def update_ingredient(self, updated_ingredient: Ingredient) -> None:
         for index, ingredient in enumerate(self._ingredients):
             if ingredient.id == updated_ingredient.id:
                 self._ingredients[index] = updated_ingredient
-                return True
-        return False
+                return updated_ingredient
+        return None
     def delete_ingredient(self, ingredient_id: int) -> bool:
         for index, ingredient in enumerate(self._ingredients):
             if ingredient.id == ingredient_id:
