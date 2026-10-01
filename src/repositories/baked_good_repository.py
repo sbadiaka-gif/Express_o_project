@@ -11,7 +11,7 @@ class BakedGoodRepository:
         BakedGood.id = self._next_id
         self._next_id += 1
         self._BakedGoods.append(BakedGood)
-        return BakedGood
+        return deepcopy(BakedGood)
     
     def get_by_id(self, BakedGood_id: int) -> BakedGood | None:
         for BakedGood in self._BakedGoods:

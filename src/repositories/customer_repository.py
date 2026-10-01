@@ -11,7 +11,7 @@ class CustomerRepository:
         Customer.id = self._next_id
         self._next_id += 1
         self._Customers.append(Customer)
-        return Customer
+        return deepcopy(Customer)
     
     def get_by_id(self, Customer_id: int) -> Customer | None:
         for Customer in self._Customers:
