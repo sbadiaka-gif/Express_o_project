@@ -20,7 +20,7 @@ class DrinkRepository:
         return None
 
     def get_all_drinks(self) -> list[Drink]:
-        return [deepcopy(drink) for drink in self._drinks]
+        return deepcopy(self._drinks)
 
     def update_drink(self, updated_drink: Drink) -> Drink | None:
         for index, drink in enumerate(self._drinks):
