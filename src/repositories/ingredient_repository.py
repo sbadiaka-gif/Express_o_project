@@ -1,7 +1,4 @@
 """Ingredient repository."""
-
-from copy import deepcopy
-
 from src.models.ingredient import Ingredient
 
 
@@ -15,24 +12,21 @@ class IngredientRepository:
         self._next_id += 1
         self._ingredients.append(deepcopy(ingredient))
         return ingredient
-
-    def get_by_id(self, ingredient_id: int) -> Ingredient | None:
+    def get_ingredient_by_id(self, ingredient_id: int) -> Ingredient | None:
         for ingredient in self._ingredients:
             if ingredient.id == ingredient_id:
                 return deepcopy(ingredient)
         return None
-
-    def get_all(self) -> list[Ingredient]:
-        return deepcopy(self._ingredients)
-
-    def update(self, updated_ingredient: Ingredient) -> None:
+    def get_all_ingredients(self) -> list[Ingredient]:
+        return list(self._ingredients)
+    
+    def update_ingredient(self, updated_ingredient: Ingredient) -> None:
         for index, ingredient in enumerate(self._ingredients):
             if ingredient.id == updated_ingredient.id:
                 self._ingredients[index] = deepcopy(updated_ingredient)
                 return updated_ingredient
         return None
-
-    def delete(self, ingredient_id: int) -> bool:
+    def delete_ingredient(self, ingredient_id: int) -> bool:
         for index, ingredient in enumerate(self._ingredients):
             if ingredient.id == ingredient_id:
                 del self._ingredients[index]
