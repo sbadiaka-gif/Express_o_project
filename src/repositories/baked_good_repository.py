@@ -25,9 +25,11 @@ class BakedGoodRepository:
     def get_all(self) -> list[BakedGood]:
         return deepcopy(self._baked_goods)
 
-    def update(self, id: int, updated_baked_good: BakedGood) -> BakedGood | None:
+    def update(
+        self, baked_good_id: int, updated_baked_good: BakedGood
+    ) -> BakedGood | None:
         for index, BakedGood in enumerate(self._baked_goods):
-            if BakedGood.id == id:
+            if BakedGood.id == baked_good_id:
                 self._baked_goods[index] = deepcopy(updated_baked_good)
                 return updated_baked_good
 
