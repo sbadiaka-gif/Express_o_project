@@ -1,5 +1,6 @@
 """Drink repository."""
 from src.models.drink import Drink
+from copy import deepcopy
 
 class DrinkRepository:
     def __init__(self):
@@ -10,22 +11,22 @@ class DrinkRepository:
         drink.id = self._next_id
         self._next_id += 1
         self._drinks.append(drink)
-        return drink
+        return deepcopy(drink)
 
     def get_drink_by_id(self, drink_id: int) -> Drink | None:
         for drink in self._drinks:
             if drink.id == drink_id:
-                return drink
+                return deepcopy(drink)
         return None
 
     def get_all_drinks(self) -> list[Drink]:
-        return list(self._drinks)
+        return [deepcopy(drink) for drink in self._drinks]
 
     def update_drink(self, updated_drink: Drink) -> Drink | None:
         for index, drink in enumerate(self._drinks):
             if drink.id == updated_drink.id:
                 self._drinks[index] = updated_drink
-                return updated_drink
+                return deepcopy(updated_drink)
         return None
 
     def delete_drink(self, drink_id: int) -> bool:
