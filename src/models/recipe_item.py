@@ -1,7 +1,9 @@
 """Recipe-item model."""
+
 # src/models/recipe_item.py
 from dataclasses import dataclass
 from decimal import Decimal
+
 
 @dataclass
 class RecipeItem:

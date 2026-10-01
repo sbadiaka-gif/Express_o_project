@@ -1,7 +1,9 @@
 """Drink model."""
+
 from src.models.recipe_item import RecipeItem
 from dataclasses import dataclass, field
 from decimal import Decimal
+
 
 @dataclass
 class Drink:
