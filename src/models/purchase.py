@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from decimal import Decimal
 from datetime import datetime
-from .purchase_item import PurchaseItem
+from purchase_item import PurchaseItem
 
 
 @dataclass
