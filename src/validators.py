@@ -9,19 +9,25 @@ def validate_name_not_empty(value: str, name: str) -> None:
 
 def validate_money_decimal_positive_two_decimal_places(value: Decimal, name: str) -> None:
     """Validate that a float is positive and has at most two decimal places."""
-    if value < 0:
-        raise ValueError(f"{name} must be a positive number.")
-    if round(value, 2) != value:
-        raise ValueError(f"{name} must have at most two decimal places.")
-    if type(value) != Decimal:
-        raise ValueError(f"{name} must be a Decimal type.")
+    error =[]
+    if not isinstance(value, Decimal):
+        error.append(f"{name} must be a Decimal type.")
+    if value <= 0:
+        error.append(f"{name} must be a positive number.")
+    if value.as_tuple().exponent < -2:
+        error.append(f"{name} must have at most two decimal places.")
+    if error:
+        raise ValueError(" ".join(error))
 
-def validate_markup_is_decimal_and_positive(value: Decimal) -> None:
+def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is positive."""
+    error = []
+    if not isinstance(value, Decimal):
+            error.append(f"{name} must be a Decimal type.")
     if value < 0:
-        raise ValueError("Markup must be a positive number.")
-    if type(value) != Decimal:
-        raise ValueError("Markup must be a Decimal type.")
+        error.append(f"{name} must be a positive number.")
+    if error:
+        raise ValueError(" ".join(error))
 
 def validate_email(value: str) -> None:
     """Validate that an email address is in a valid format."""
@@ -35,7 +41,7 @@ def validate_email_unique(customer_repository, email: str) -> None:
         if customer.email == email:
             raise ValueError("Email address must be unique.")
 
-def drink_name_unique(drink_repository, name: str) -> None:
+def validate_drink_name_unique(drink_repository, name: str) -> None:
     """Validate that a drink name is unique in the drink repository."""
     existing_drinks = drink_repository.get_all()
     for drink in existing_drinks:
@@ -48,8 +54,8 @@ def validate_purchase_timestamp_utc(value: datetime) -> None:
        raise ValueError("Timestamp must be in UTC format.") 
          
 
-def validate_record_exists(repository, record_id: int) -> None:
+def validate_record_exists(repository, record_id: int, name: str) -> None:
    record_exists = [record for record in repository.get_all() if record.id == record_id]
    if not record_exists:
-       raise ValueError("Record does not exist.")
+       raise ValueError(f"{name} does not exist.")
 
