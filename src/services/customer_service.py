@@ -27,5 +27,17 @@ class CustomerService:
     def get_customer(self, id: int):
         pass
 
+    def get_customer_name(self, id: int):
+        pass
+
+    def get_customer_email(self, id: int):
+        pass
+
+    def get_customer_lifetime_spent(self, id: int):
+        pass
+
     def remove_customer(self, id: int):
+        pass
+
+    def validate_customer_exists(self, id: int):
         pass
