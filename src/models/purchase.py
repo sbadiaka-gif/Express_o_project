@@ -1,9 +1,10 @@
 """Purchase model."""
 
 from dataclasses import dataclass, field
-from decimal import Decimal
 from datetime import datetime
-from purchase_item import PurchaseItem
+from decimal import Decimal
+
+from src.models.purchase_item import PurchaseItem
 
 
 @dataclass
