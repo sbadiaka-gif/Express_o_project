@@ -21,6 +21,9 @@ class BakedGoodService:
 
         return self._repository.add(baked_good)
 
+    def get_baked_goods(self, id: int) -> list[BakedGood]:
+        return self._repository.get_all()
+
     def get_baked_good(self, id: int) -> BakedGood:
         self.validate_baked_good_exists(id)
         return cast(BakedGood, self._repository.get_by_id(id))
