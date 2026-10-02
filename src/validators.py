@@ -2,7 +2,6 @@
 
 from decimal import Decimal
 from datetime import datetime
-from src.repositories.customer_repository import CustomerRepository
 from src.repositories.drink_repository import DrinkRepository
 
 
@@ -36,14 +35,6 @@ def validate_email(value: str) -> None:
     """Validate that an email address is in a valid format."""
     if "@" not in value or "." not in value.split("@")[-1]:
         raise ValueError("Invalid email address format.")
-
-
-def validate_email_unique(customer_repository: CustomerRepository, email: str) -> None:
-    """Validate that an email address is unique in the customer repository."""
-    existing_customers = customer_repository.get_all()
-    for customer in existing_customers:
-        if customer.email == email:
-            raise ValueError("Email address must be unique.")
 
 
 def drink_name_unique(drink_repository: DrinkRepository, name: str) -> None:

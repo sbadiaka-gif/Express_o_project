@@ -25,10 +25,12 @@ class BakedGoodService:
         self.validate_baked_good_exists(id)
         return cast(BakedGood, self._repository.get_by_id(id))
 
-    def update_baked_good(self, id: int, baked_good: BakedGood):
+    def update_baked_good(self, id: int, baked_good: BakedGood) -> BakedGood:
         self.validate_baked_good_exists(id)
         self.validate_baked_good(baked_good)
-        self._repository.update(id, baked_good)
+        self.validate_is_unique(baked_good)
+
+        return cast(BakedGood, self._repository.update(id, baked_good))
 
     def remove_baked_good(self, id: int):
         self.validate_baked_good_exists(id)
@@ -46,7 +48,7 @@ class BakedGoodService:
     def validate_baked_good_exists(self, id: int):
         baked_good = self._repository.get_by_id(id)
         if baked_good == None:
-            raise BakedGoodNotFoundError(f"Baked good by id: {int}")
+            raise BakedGoodNotFoundError(f"Baked good by id '{int}' not found.")
 
     def validate_allergens(self, allergens: list[str]):
         for allergen in allergens:

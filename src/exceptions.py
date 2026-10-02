@@ -25,6 +25,14 @@ class BakedGoodDuplicateItemError(Exception):
     pass
 
 
+class CustomerDuplicateEmailError(Exception):
+    pass
+
+
+class CustomerNotFoundError(Exception):
+    pass
+
+
 class InsufficientStockError(Exception):
     """Raised when there isn't enough of an ingredient to fulfill an order."""
 
