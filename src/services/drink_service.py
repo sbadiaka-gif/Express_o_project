@@ -2,7 +2,6 @@
 
 from src.models.drink import Drink
 from src.repositories.drink_repository import DrinkRepository
-from src.repositories.ingredient_repository import IngredientRepository
 from src.services.ingredient_service import IngredientService
 from src.models import RecipeItem
 from src.validators import validate_record_exists, validate_name_not_empty, validate_money_decimal_positive_two_decimal_places, validate_drink_name_unique
@@ -11,38 +10,31 @@ from exceptions import IngredientNotFoundError, InsufficientStockError
 
 
 class DrinkService:
-    def __init__(self, drink_repository: DrinkRepository, ingredient_service: IngredientService, ingredient_repository: IngredientRepository):
+    def __init__(self, drink_repository: DrinkRepository, ingredient_service: IngredientService):
         self.drink_repository = drink_repository
         self.ingredient_service = ingredient_service
-        self.ingredient_repository = ingredient_repository
 
-    def make_a_drink(self, name: str, markup_percentage: Decimal, cost_to_produce: Decimal, sale_price: Decimal, recipe_items: list[RecipeItem]) -> None:
-        validate_name_not_empty(name, "Drink name")
-        validate_drink_name_unique(self.drink_repository, name)
-        validate_money_decimal_positive_two_decimal_places(markup_percentage, "Markup percentage")
-        validate_money_decimal_positive_two_decimal_places(cost_to_produce, "Cost to produce")
-        validate_money_decimal_positive_two_decimal_places(sale_price, "Sale price")
+    def add_drink(self, drink: Drink) -> Drink:
+        validate_name_not_empty(drink.name, "Drink name")
+        validate_drink_name_unique(self.drink_repository, drink.name)
+        validate_money_decimal_positive_two_decimal_places(drink.markup_percentage, "Markup percentage")
+        validate_money_decimal_positive_two_decimal_places(drink.cost_to_produce, "Cost to produce")
+        validate_money_decimal_positive_two_decimal_places(drink.sale_price, "Sale price")
 
-        for recipe_item in recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
-            if not self.ingredient_service.is_ingredient_amount_sufficient(
-                recipe_item.ingredient_id, recipe_item.quantity
-            ):
-                raise InsufficientStockError(
-                    f"Not enough stock for ingredient id {recipe_item.ingredient_id}."
-                )
+        # for recipe_item in drink.recipe:
+        #     self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
+        #     if not self.ingredient_service.is_ingredient_amount_sufficient(
+        #         recipe_item.ingredient_id, recipe_item.quantity
+        #     ):
+        #         raise InsufficientStockError(
+        #             f"Not enough stock for ingredient id {recipe_item.ingredient_id}."
+        #         )
 
-        for recipe_item in recipe_items:
-            self.ingredient_service.deduct_ingredient_amount(recipe_item.ingredient_id, recipe_item.quantity)
+        # for recipe_item in drink.recipe:
+        #     self.ingredient_service.deduct_ingredient_amount(recipe_item.ingredient_id, recipe_item.quantity)
 
-        new_drink = Drink(
-            name=name,
-            markup_percentage=markup_percentage,
-            cost_to_produce=cost_to_produce,
-            sale_price=sale_price,
-            recipe=recipe_items,
-        )
-        self.drink_repository.add(new_drink)
+        self.drink_repository.add(drink)
+        return drink
 
     def change_drink_price(self, drink_id: int, new_sale_price: Decimal) -> None:
         drink = self._validate_and_get_drink(drink_id, new_sale_price, "New sale price")
@@ -62,7 +54,7 @@ class DrinkService:
     def change_drink_recipe(self, drink_id: int, new_recipe_items: list[RecipeItem]) -> None:
         """Replace a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in new_recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
+            self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe = new_recipe_items
@@ -79,7 +71,7 @@ class DrinkService:
     def add_recipe_items(self, drink_id: int, recipe_items: list[RecipeItem]) -> None:
         """Add multiple ingredients to a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
+            self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe.extend(recipe_items)

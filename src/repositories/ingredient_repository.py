@@ -3,6 +3,8 @@
 from src.models.ingredient import Ingredient
 from copy import deepcopy
 
+from src.validators import validate_record_exists
+
 
 class IngredientRepository:
     def __init__(self):
@@ -37,3 +39,4 @@ class IngredientRepository:
                 del self._ingredients[index]
                 return True
         return False
+    

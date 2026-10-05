@@ -38,3 +38,6 @@ class IngredientService:
             )
         ingredient.unit_amount -= amount
         self.ingredient_repository.update(ingredient)
+
+    def validate_ingredient_exists(self, ingredient_id: int) -> None:
+        validate_record_exists(self.ingredient_repository, ingredient_id, "Ingredient")
