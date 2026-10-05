@@ -1,30 +1,70 @@
 """Drink service."""
 
+# CHANGED: original version imported `RecipeItem` from `src.models` and used a broken validation setup. The updated version
+# imports from the actual module and uses the project validator contract consistently.
+
+from decimal import Decimal
+
+from src.exceptions import IngredientNotFoundError, InsufficientStockError
 from src.models.drink import Drink
+from src.models.recipe_item import RecipeItem
 from src.repositories.drink_repository import DrinkRepository
 from src.repositories.ingredient_repository import IngredientRepository
 from src.services.ingredient_service import IngredientService
-from src.models import RecipeItem
-from src.validators import validate_record_exists, validate_name_not_empty, validate_money_decimal_positive_two_decimal_places, validate_drink_name_unique
-from decimal import Decimal
-from exceptions import IngredientNotFoundError, InsufficientStockError
+from src.validators import (
+    validate_drink_name_unique,
+    validate_money_decimal_positive_two_decimal_places,
+    validate_name_not_empty,
+    validate_record_exists,
+)
 
 
 class DrinkService:
-    def __init__(self, drink_repository: DrinkRepository, ingredient_service: IngredientService, ingredient_repository: IngredientRepository):
+    def __init__(
+        self,
+        drink_repository: DrinkRepository,
+        ingredient_service: IngredientService,
+        ingredient_repository: IngredientRepository,
+    ):
         self.drink_repository = drink_repository
         self.ingredient_service = ingredient_service
         self.ingredient_repository = ingredient_repository
 
-    def make_a_drink(self, name: str, markup_percentage: Decimal, cost_to_produce: Decimal, sale_price: Decimal, recipe_items: list[RecipeItem]) -> None:
+    def get_drinks(self) -> list[Drink]:
+        return self.drink_repository.get_all()
+
+    def get_drink(self, drink_id: int) -> Drink:
+        drink = self.drink_repository.get_by_id(drink_id)
+        if drink is None:
+            raise ValueError("Drink does not exist.")
+        return drink
+
+    # CHANGED: added direct lookup for dependency injection and service-to-service calls.
+    def get_drink_by_id(self, drink_id: int) -> Drink | None:
+        return self.drink_repository.get_by_id(drink_id)
+
+    def make_a_drink(
+        self,
+        name: str,
+        markup_percentage: Decimal,
+        cost_to_produce: Decimal,
+        sale_price: Decimal,
+        recipe_items: list[RecipeItem],
+    ) -> None:
         validate_name_not_empty(name, "Drink name")
         validate_drink_name_unique(self.drink_repository, name)
-        validate_money_decimal_positive_two_decimal_places(markup_percentage, "Markup percentage")
-        validate_money_decimal_positive_two_decimal_places(cost_to_produce, "Cost to produce")
+        validate_money_decimal_positive_two_decimal_places(
+            markup_percentage, "Markup percentage"
+        )
+        validate_money_decimal_positive_two_decimal_places(
+            cost_to_produce, "Cost to produce"
+        )
         validate_money_decimal_positive_two_decimal_places(sale_price, "Sale price")
 
         for recipe_item in recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
+            validate_record_exists(
+                self.ingredient_repository, recipe_item.ingredient_id, "Ingredient"
+            )
             if not self.ingredient_service.is_ingredient_amount_sufficient(
                 recipe_item.ingredient_id, recipe_item.quantity
             ):
@@ -33,7 +73,9 @@ class DrinkService:
                 )
 
         for recipe_item in recipe_items:
-            self.ingredient_service.deduct_ingredient_amount(recipe_item.ingredient_id, recipe_item.quantity)
+            self.ingredient_service.deduct_ingredient_amount(
+                recipe_item.ingredient_id, recipe_item.quantity
+            )
 
         new_drink = Drink(
             name=name,
@@ -49,20 +91,32 @@ class DrinkService:
         drink.sale_price = new_sale_price
         self.drink_repository.update(drink)
 
-    def change_drink_markup(self, drink_id: int, new_markup_percentage: Decimal) -> None:
-        drink = self._validate_and_get_drink(drink_id, new_markup_percentage, "New markup percentage")
+    def change_drink_markup(
+        self, drink_id: int, new_markup_percentage: Decimal
+    ) -> None:
+        drink = self._validate_and_get_drink(
+            drink_id, new_markup_percentage, "New markup percentage"
+        )
         drink.markup_percentage = new_markup_percentage
         self.drink_repository.update(drink)
 
-    def change_cost_to_produce(self, drink_id: int, new_cost_to_produce: Decimal) -> None:
-        drink = self._validate_and_get_drink(drink_id, new_cost_to_produce, "New cost to produce")
+    def change_cost_to_produce(
+        self, drink_id: int, new_cost_to_produce: Decimal
+    ) -> None:
+        drink = self._validate_and_get_drink(
+            drink_id, new_cost_to_produce, "New cost to produce"
+        )
         drink.cost_to_produce = new_cost_to_produce
         self.drink_repository.update(drink)
 
-    def change_drink_recipe(self, drink_id: int, new_recipe_items: list[RecipeItem]) -> None:
+    def change_drink_recipe(
+        self, drink_id: int, new_recipe_items: list[RecipeItem]
+    ) -> None:
         """Replace a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in new_recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
+            validate_record_exists(
+                self.ingredient_repository, recipe_item.ingredient_id, "Ingredient"
+            )
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe = new_recipe_items
@@ -79,7 +133,9 @@ class DrinkService:
     def add_recipe_items(self, drink_id: int, recipe_items: list[RecipeItem]) -> None:
         """Add multiple ingredients to a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
+            validate_record_exists(
+                self.ingredient_repository, recipe_item.ingredient_id, "Ingredient"
+            )
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe.extend(recipe_items)
@@ -89,14 +145,20 @@ class DrinkService:
         """Remove multiple ingredients from a drink's recipe definition. Does not affect ingredient stock."""
         drink = self._validate_and_get_drink_only(drink_id)
         original_recipe_length = len(drink.recipe)
-        drink.recipe = [item for item in drink.recipe if item.ingredient_id not in ingredient_ids]
+        drink.recipe = [
+            item for item in drink.recipe if item.ingredient_id not in ingredient_ids
+        ]
 
         if len(drink.recipe) == original_recipe_length:
-            raise IngredientNotFoundError("No matching ingredients found in the recipe to remove.")
+            raise IngredientNotFoundError(
+                "No matching ingredients found in the recipe to remove."
+            )
 
         self.drink_repository.update(drink)
 
-    def _validate_and_get_drink(self, drink_id: int, new_value: Decimal, value_name: str) -> Drink:
+    def _validate_and_get_drink(
+        self, drink_id: int, new_value: Decimal, value_name: str
+    ) -> Drink:
         validate_record_exists(self.drink_repository, drink_id, "Drink")
         validate_money_decimal_positive_two_decimal_places(new_value, value_name)
         return self.drink_repository.get_by_id(drink_id)

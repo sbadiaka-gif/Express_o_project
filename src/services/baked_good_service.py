@@ -1,14 +1,18 @@
 """Baked-good service."""
 
+# CHANGED: original version used bare imports and built the not-found message with the built-in `int` instead of the real
+# id value. The updated version uses project package imports and prints the actual id for debugging clarity.
+
+from typing import cast
+
+from src.exceptions import BakedGoodDuplicateItemError, BakedGoodNotFoundError
 from src.models.baked_good import BakedGood
 from src.repositories.baked_good_repository import BakedGoodRepository
-from validators import (
+from src.validators import (
+    validate_markup_is_decimal_and_positive,
     validate_money_decimal_positive_two_decimal_places,
     validate_name_not_empty,
-    validate_markup_is_decimal_and_positive,
 )
-from exceptions import BakedGoodNotFoundError, BakedGoodDuplicateItemError
-from typing import cast
 
 
 class BakedGoodService:
@@ -18,7 +22,6 @@ class BakedGoodService:
     def create_baked_good(self, baked_good: BakedGood) -> BakedGood:
         self.validate_baked_good(baked_good)
         self.validate_is_unique(baked_good)
-
         return self._repository.add(baked_good)
 
     def get_baked_goods(self, id: int) -> list[BakedGood]:
@@ -28,11 +31,14 @@ class BakedGoodService:
         self.validate_baked_good_exists(id)
         return cast(BakedGood, self._repository.get_by_id(id))
 
+    # CHANGED: added a direct lookup method so PurchaseService can request current baked-good pricing.
+    def get_baked_good_by_id(self, baked_good_id: int) -> BakedGood | None:
+        return self._repository.get_by_id(baked_good_id)
+
     def update_baked_good(self, id: int, baked_good: BakedGood) -> BakedGood:
         self.validate_baked_good_exists(id)
         self.validate_baked_good(baked_good)
         self.validate_is_unique(baked_good)
-
         return cast(BakedGood, self._repository.update(id, baked_good))
 
     def remove_baked_good(self, id: int):
@@ -44,14 +50,17 @@ class BakedGoodService:
         validate_money_decimal_positive_two_decimal_places(
             baked_good.purchasing_cost, "purchasing_cost"
         )
-        validate_markup_is_decimal_and_positive(baked_good.markup_percentage)
+        validate_markup_is_decimal_and_positive(
+            baked_good.markup_percentage, "markup_percentage"
+        )
         self.validate_allergens(baked_good.allergens)
         validate_name_not_empty(baked_good.vendor_name, "vendor_name")
 
+    # CHANGED: fixed the not-found error so it uses the correct id value instead of the built-in `int` name.
     def validate_baked_good_exists(self, id: int):
         baked_good = self._repository.get_by_id(id)
-        if baked_good == None:
-            raise BakedGoodNotFoundError(f"Baked good by id '{int}' not found.")
+        if baked_good is None:
+            raise BakedGoodNotFoundError(f"Baked good by id '{id}' not found.")
 
     def validate_allergens(self, allergens: list[str]):
         for allergen in allergens:
