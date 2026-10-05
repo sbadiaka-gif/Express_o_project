@@ -1,6 +1,3 @@
-"""Customer repository."""
-
-# CHANGED: repository imports kept in a project-structured format and are documented for clarity.
 from src.models.customer import Customer
 from copy import deepcopy
 
@@ -10,38 +7,38 @@ class CustomerRepository:
         self._customers: list[Customer] = []
         self._next_id: int = 1
 
-    # CHANGED: repository assigns the next id and stores a deep copy to keep the in-memory list safe.
     def add(self, customer: Customer) -> Customer:
+        """Add a new customer to the data."""
         customer.id = self._next_id
         self._next_id += 1
         self._customers.append(deepcopy(customer))
         return customer
 
-    # CHANGED: lookup is done by id and returns a deep copy to avoid direct mutation of stored objects.
-    def get_by_id(self, customer_id: int) -> Customer | None:
-        for Customer in self._customers:
-            if Customer.id == customer_id:
-                return deepcopy(Customer)
+    def get_by_id(self, id: int) -> Customer | None:
+        """Get a customer with the id."""
+        for customer in self._customers:
+            if customer.id == id:
+                return deepcopy(customer)
 
         return None
 
-    # CHANGED: get_all returns a copied list so callers cannot change repository storage accidentally.
     def get_all(self) -> list[Customer]:
+        """Get the list of customer."""
         return deepcopy(self._customers)
 
-    # CHANGED: update replaces the object at the matching id and keeps repository data consistent.
-    def update(self, customer_id: int, updated_customer: Customer) -> Customer | None:
+    def update(self, id: int, updated_customer: Customer) -> Customer | None:
+        """Replace a customer with the id."""
         for index, customer in enumerate(self._customers):
-            if customer.id == customer_id:
+            if customer.id == id:
                 self._customers[index] = deepcopy(updated_customer)
                 return updated_customer
 
         return None
 
-    # CHANGED: delete removes the matching record and returns False if it is not found.
-    def delete(self, customer_id: int) -> bool:
+    def delete(self, id: int) -> bool:
+        """Remove a customer with the id."""
         for index, customer in enumerate(self._customers):
-            if customer.id == customer_id:
+            if customer.id == id:
                 del self._customers[index]
                 return True
 
