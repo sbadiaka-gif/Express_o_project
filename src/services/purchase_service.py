@@ -6,8 +6,13 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from src.models.purchase import Purchase
+from src.models.purchase_item import PurchaseItem
 from src.repositories.purchase_repository import PurchaseRepository
+from src.services.customer_service import CustomerService
+from src.services.drink_service import DrinkService
+from src.services.baked_good_service import BakedGoodService
 from src.validators import validate_purchase_timestamp_utc
+from typing import cast
 
 
 class PurchaseService:
@@ -16,9 +21,9 @@ class PurchaseService:
     def __init__(
         self,
         repository: PurchaseRepository,
-        customer_service=None,
-        drink_service=None,
-        baked_good_service=None,
+        customer_service: CustomerService | None = None,
+        drink_service: DrinkService | None = None,
+        baked_good_service: BakedGoodService | None = None,
     ):
         self._repository = repository
         self._customer_service = customer_service
@@ -68,9 +73,12 @@ class PurchaseService:
     def _validate_purchase(self, purchase: Purchase) -> None:
         if purchase.customer_id is None:
             raise ValueError("Customer ID is required.")
-        if purchase.items is None or len(purchase.items) == 0:
+        if (
+            cast(list[PurchaseItem] | None, purchase.items) is None
+            or len(purchase.items) == 0
+        ):
             raise ValueError("Purchase must include at least one item.")
-        if purchase.timestamp is None:
+        if cast(datetime | None, purchase.timestamp) is None:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
@@ -115,7 +123,7 @@ class PurchaseService:
         if get_customer_method(customer_id) is None:
             raise ValueError("Customer does not exist.")
 
-    def _get_current_item_price(self, item):
+    def _get_current_item_price(self, item: PurchaseItem):
         if item.item_type == "drink":
             if self._drink_service is None:
                 raise ValueError("Drink service is required to price a drink purchase.")
