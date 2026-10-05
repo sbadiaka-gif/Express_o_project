@@ -21,7 +21,7 @@ class BakedGoodService:
 
         return self._repository.add(baked_good)
 
-    def get_baked_goods(self, id: int) -> list[BakedGood]:
+    def get_baked_goods(self) -> list[BakedGood]:
         return self._repository.get_all()
 
     def get_baked_good(self, id: int) -> BakedGood:
@@ -44,7 +44,9 @@ class BakedGoodService:
         validate_money_decimal_positive_two_decimal_places(
             baked_good.purchasing_cost, "purchasing_cost"
         )
-        validate_markup_is_decimal_and_positive(baked_good.markup_percentage)
+        validate_markup_is_decimal_and_positive(
+            baked_good.markup_percentage, "markup_percentage"
+        )
         self.validate_allergens(baked_good.allergens)
         validate_name_not_empty(baked_good.vendor_name, "vendor_name")
 

@@ -2,7 +2,6 @@
 
 from decimal import Decimal
 from datetime import datetime
-from src.repositories.drink_repository import DrinkRepository
 
 
 def validate_name_not_empty(value: str, name: str) -> None:
@@ -15,7 +14,7 @@ def validate_money_decimal_positive_two_decimal_places(
     value: Decimal, name: str
 ) -> None:
     """Validate that a float is positive and has at most two decimal places."""
-    error =[]
+    error = []
     if not isinstance(value, Decimal):
         error.append(f"{name} must be a Decimal type.")
     if value <= 0:
@@ -25,11 +24,12 @@ def validate_money_decimal_positive_two_decimal_places(
     if error:
         raise ValueError(" ".join(error))
 
+
 def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is positive."""
     error = []
     if not isinstance(value, Decimal):
-            error.append(f"{name} must be a Decimal type.")
+        error.append(f"{name} must be a Decimal type.")
     if value < 0:
         error.append(f"{name} must be a positive number.")
     if error:
@@ -55,10 +55,6 @@ def validate_purchase_timestamp_utc(value: datetime) -> None:
     if value.tzinfo != datetime.timezone.utc:
         raise ValueError("Timestamp must be in UTC format.")
 
-def validate_record_exists(repository, record_id: int, name: str) -> None:
-   record_exists = [record for record in repository.get_all() if record.id == record_id]
-   if not record_exists:
-       raise ValueError(f"{name} does not exist.")
 
 def validate_record_exists(repository, record_id: int) -> None:
     record_exists = [
