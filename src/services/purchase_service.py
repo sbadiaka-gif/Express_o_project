@@ -12,7 +12,6 @@ from src.services.customer_service import CustomerService
 from src.services.drink_service import DrinkService
 from src.services.baked_good_service import BakedGoodService
 from src.validators import validate_purchase_timestamp_utc
-from typing import cast
 
 
 class PurchaseService:
@@ -73,12 +72,9 @@ class PurchaseService:
     def _validate_purchase(self, purchase: Purchase) -> None:
         if purchase.customer_id is None:
             raise ValueError("Customer ID is required.")
-        if (
-            cast(list[PurchaseItem] | None, purchase.items) is None
-            or len(purchase.items) == 0
-        ):
+        if not purchase.items:
             raise ValueError("Purchase must include at least one item.")
-        if cast(datetime | None, purchase.timestamp) is None:
+        if not purchase.timestamp:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
