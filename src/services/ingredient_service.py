@@ -1,8 +1,16 @@
 """Ingredient service."""
+
+# CHANGED: original code used bare imports (`from validators` and `from exceptions`), which breaks when the project is
+# run from the repository root because Python must import from the `src` package namespace.
+
 from decimal import Decimal
-from validators import validate_record_exists, validate_money_decimal_positive_two_decimal_places
+
+from src.exceptions import InsufficientStockError
 from src.repositories.ingredient_repository import IngredientRepository
-from exceptions import  InsufficientStockError
+from src.validators import (
+    validate_money_decimal_positive_two_decimal_places,
+    validate_record_exists,
+)
 
 
 class IngredientService:
@@ -18,10 +26,14 @@ class IngredientService:
         ingredient.unit_amount += amount
         self.ingredient_repository.update(ingredient)
 
-    def is_ingredient_amount_sufficient(self, ingredient_id, required_amount: Decimal) -> bool:
+    def is_ingredient_amount_sufficient(
+        self, ingredient_id, required_amount: Decimal
+    ) -> bool:
         """Check if the ingredient's unit_amount is sufficient for the required amount."""
         validate_record_exists(self.ingredient_repository, ingredient_id, "Ingredient")
-        validate_money_decimal_positive_two_decimal_places(required_amount, "Required Amount")
+        validate_money_decimal_positive_two_decimal_places(
+            required_amount, "Required Amount"
+        )
 
         ingredient = self.ingredient_repository.get_by_id(ingredient_id)
         return ingredient.unit_amount >= required_amount
@@ -38,3 +50,6 @@ class IngredientService:
             )
         ingredient.unit_amount -= amount
         self.ingredient_repository.update(ingredient)
+
+    def validate_ingredient_exists(self, ingredient_id: int) -> None:
+        validate_record_exists(self.ingredient_repository, ingredient_id, "Ingredient")
