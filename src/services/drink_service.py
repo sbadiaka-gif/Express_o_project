@@ -30,18 +30,6 @@ class DrinkService:
         validate_money_decimal_positive_two_decimal_places(drink.cost_to_produce, "Cost to produce")
         validate_money_decimal_positive_two_decimal_places(drink.sale_price, "Sale price")
 
-        # for recipe_item in drink.recipe:
-        #     self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
-        #     if not self.ingredient_service.is_ingredient_amount_sufficient(
-        #         recipe_item.ingredient_id, recipe_item.quantity
-        #     ):
-        #         raise InsufficientStockError(
-        #             f"Not enough stock for ingredient id {recipe_item.ingredient_id}."
-        #         )
-
-        # for recipe_item in drink.recipe:
-        #     self.ingredient_service.deduct_ingredient_amount(recipe_item.ingredient_id, recipe_item.quantity)
-
         self.drink_repository.add(drink)
         return drink
 

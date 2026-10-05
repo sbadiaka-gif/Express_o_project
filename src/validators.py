@@ -6,13 +6,14 @@
 
 from datetime import datetime
 from decimal import Decimal
+from src.repositories.drink_repository import DrinkRepository
 
 
 # CHANGED: this validator now handles None safely before checking .strip().
 def validate_name_not_empty(value: str, name: str) -> None:
     """Validate that a string is not empty."""
     if value is None or not value.strip():
-        return f"{name} cannot be empty."
+        raise ValueError(f"{name} cannot be empty.")
 
 
 # CHANGED: original version rejected valid zero values; this version allows zero and only rejects negatives.
@@ -22,30 +23,34 @@ def validate_money_decimal_positive_two_decimal_places(
     """Validate that a Decimal is non-negative and has at most two decimal places."""
     error = []
     if not isinstance(value, Decimal):
-        error.append(f"{name} must be a Decimal type.")
+      raise ValueError(f"{name} must be a Decimal type.")
+
+    error = []
     if value < 0:
         error.append(f"{name} must be a positive number.")
     if value.as_tuple().exponent < -2:
         error.append(f"{name} must have at most two decimal places.")
     if error:
-        return ", ".join(error)
+        raise ValueError(", ".join(error))
 
 
 def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is non-negative."""
-    error = []
+
     if not isinstance(value, Decimal):
-        error.append(f"{name} must be a Decimal type.")
+     raise ValueError(f"{name} must be a Decimal type.")
+    error = []
+    
     if value < 0:
         error.append(f"{name} must be a positive number.")
     if error:
-        return ", ".join(error)
+        raise ValueError(" ".join(error))
 
 
 def validate_email(value: str) -> None:
     """Validate that an email address is in a valid format."""
     if "@" not in value or "." not in value.split("@")[-1]:
-        return "Invalid email address format."
+        raise ValueError("Invalid email address format.")
 
 
 def validate_drink_name_unique(drink_repository: DrinkRepository, name: str) -> None:
@@ -53,15 +58,19 @@ def validate_drink_name_unique(drink_repository: DrinkRepository, name: str) -> 
     existing_drinks = drink_repository.get_all()
     for drink in existing_drinks:
         if drink.name == name:
-            return "Drink name must be unique."
+            raise ValueError("Drink name must be unique.")
 
 
 # CHANGE: replaced the old timezone check with a UTC offset check that works correctly for timezone-aware datetimes.
 def validate_purchase_timestamp_utc(value: datetime) -> None:
     """Validate that a timestamp is in UTC format."""
     if value.tzinfo != datetime.timezone.utc:
-        return "Timestamp must be in UTC format."
+        raise ValueError("Timestamp must be in UTC format.")
 
+def validate_record_exists(repository, record_id: int, name: str) -> None:
+   record_exists = [record for record in repository.get_all() if record.id == record_id]
+   if not record_exists:
+       raise ValueError(f"{name} does not exist.")
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
 def validate_record_exists(repository, record_id: int, name: str = "Record") -> None:
@@ -70,4 +79,4 @@ def validate_record_exists(repository, record_id: int, name: str = "Record") -> 
         record for record in repository.get_all() if record.id == record_id
     ]
     if not record_exists:
-        return "Record does not exist."
+        raise ValueError(f"{name} does not exist.")
