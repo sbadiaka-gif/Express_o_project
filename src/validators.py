@@ -4,7 +4,7 @@
 # rejected valid zeros or used incorrect import paths. The updated version keeps one shared validator
 # definition and validates money as non-negative instead of strictly positive.
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
 from src.repositories.drink_repository import DrinkRepository
 
@@ -21,6 +21,7 @@ def validate_money_decimal_positive_two_decimal_places(
     value: Decimal, name: str
 ) -> None:
     """Validate that a Decimal is non-negative and has at most two decimal places."""
+    error = []
     if not isinstance(value, Decimal):
       raise ValueError(f"{name} must be a Decimal type.")
 
@@ -33,10 +34,7 @@ def validate_money_decimal_positive_two_decimal_places(
         raise ValueError(", ".join(error))
 
 
-# CHANGE: added a default name parameter and kept the method consistent with the project validator style.
-def validate_markup_is_decimal_and_positive(
-    value: Decimal, name: str = "Markup"
-) -> None:
+def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is non-negative."""
 
     if not isinstance(value, Decimal):
