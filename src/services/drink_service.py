@@ -7,7 +7,7 @@ from src.services.ingredient_service import IngredientService
 from src.models import RecipeItem
 from src.validators import validate_record_exists, validate_name_not_empty, validate_money_decimal_positive_two_decimal_places, validate_drink_name_unique
 from decimal import Decimal
-from exceptions import IngredientNotFoundError, InsufficientStockError
+from exceptions import IngredientNotFoundError
 
 
 class DrinkService:
@@ -16,33 +16,17 @@ class DrinkService:
         self.ingredient_service = ingredient_service
         self.ingredient_repository = ingredient_repository
 
-    def make_a_drink(self, name: str, markup_percentage: Decimal, cost_to_produce: Decimal, sale_price: Decimal, recipe_items: list[RecipeItem]) -> None:
-        validate_name_not_empty(name, "Drink name")
-        validate_drink_name_unique(self.drink_repository, name)
-        validate_money_decimal_positive_two_decimal_places(markup_percentage, "Markup percentage")
-        validate_money_decimal_positive_two_decimal_places(cost_to_produce, "Cost to produce")
-        validate_money_decimal_positive_two_decimal_places(sale_price, "Sale price")
-
-        for recipe_item in recipe_items:
-            validate_record_exists(self.ingredient_repository, recipe_item.ingredient_id, "Ingredient")
-            if not self.ingredient_service.is_ingredient_amount_sufficient(
-                recipe_item.ingredient_id, recipe_item.quantity
-            ):
-                raise InsufficientStockError(
-                    f"Not enough stock for ingredient id {recipe_item.ingredient_id}."
-                )
-
-        for recipe_item in recipe_items:
-            self.ingredient_service.deduct_ingredient_amount(recipe_item.ingredient_id, recipe_item.quantity)
-
-        new_drink = Drink(
-            name=name,
-            markup_percentage=markup_percentage,
-            cost_to_produce=cost_to_produce,
-            sale_price=sale_price,
-            recipe=recipe_items,
-        )
-        self.drink_repository.add(new_drink)
+    def add_a_drink(self, drink: Drink) -> None:
+        error_messages = []
+        validate_name_not_empty(drink.name, "Drink name")
+        validate_drink_name_unique(self.drink_repository, drink.name)
+        validate_money_decimal_positive_two_decimal_places(drink.markup_percentage, "Markup percentage")
+        validate_money_decimal_positive_two_decimal_places(drink.cost_to_produce, "Cost to produce")
+        validate_money_decimal_positive_two_decimal_places(drink.sale_price, "Sale price")
+        if error_messages:
+            raise ValueError(" ".join(error_messages))
+        
+        self.drink_repository.add(drink)
 
     def change_drink_price(self, drink_id: int, new_sale_price: Decimal) -> None:
         drink = self._validate_and_get_drink(drink_id, new_sale_price, "New sale price")
@@ -97,10 +81,15 @@ class DrinkService:
         self.drink_repository.update(drink)
 
     def _validate_and_get_drink(self, drink_id: int, new_value: Decimal, value_name: str) -> Drink:
+        error_messages = []
         validate_record_exists(self.drink_repository, drink_id, "Drink")
         validate_money_decimal_positive_two_decimal_places(new_value, value_name)
+        if error_messages:
+            raise ValueError(" ".join(error_messages))
         return self.drink_repository.get_by_id(drink_id)
 
     def _validate_and_get_drink_only(self, drink_id: int) -> Drink:
-        validate_record_exists(self.drink_repository, drink_id, "Drink")
+        """Validate that a drink exists and return it."""
+        if validate_record_exists(self.drink_repository, drink_id):
+            raise ValueError(f"Drink with ID {drink_id} does not exist.")
         return self.drink_repository.get_by_id(drink_id)
