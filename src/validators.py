@@ -23,7 +23,7 @@ def validate_money_decimal_positive_two_decimal_places(
     """Validate that a Decimal is non-negative and has at most two decimal places."""
     error = []
     if not isinstance(value, Decimal):
-      raise ValueError(f"{name} must be a Decimal type.")
+        raise ValueError(f"{name} must be a Decimal type.")
 
     error = []
     if value < 0:
@@ -38,9 +38,9 @@ def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is non-negative."""
 
     if not isinstance(value, Decimal):
-     raise ValueError(f"{name} must be a Decimal type.")
+        raise ValueError(f"{name} must be a Decimal type.")
     error = []
-    
+
     if value < 0:
         error.append(f"{name} must be a positive number.")
     if error:
@@ -67,10 +67,6 @@ def validate_purchase_timestamp_utc(value: datetime) -> None:
     if value.tzinfo != datetime.timezone.utc:
         raise ValueError("Timestamp must be in UTC format.")
 
-def validate_record_exists(repository, record_id: int, name: str) -> None:
-   record_exists = [record for record in repository.get_all() if record.id == record_id]
-   if not record_exists:
-       raise ValueError(f"{name} does not exist.")
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
 def validate_record_exists(repository, record_id: int, name: str = "Record") -> None:
