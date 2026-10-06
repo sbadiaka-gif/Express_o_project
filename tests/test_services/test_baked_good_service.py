@@ -79,7 +79,7 @@ def test_create_baked_good_returns_value(mocker: MockerFixture):
     assert test_service.create_baked_good(baked_good_1) == "Test Value"
 
 
-def test_get_baked_goods(mocker: MockerFixture):
+def test_get_baked_goods_gets_goods(mocker: MockerFixture):
     test_repository = BakedGoodRepository()
     mock_get_all = mocker.patch.object(test_repository, "get_all")
     mock_get_all.return_value = "Test Value"

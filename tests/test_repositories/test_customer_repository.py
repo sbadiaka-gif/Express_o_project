@@ -14,7 +14,7 @@ customer_1 = Customer(
 customer_2 = Customer(
     "Brian Smith",
     "brian.smith@example.com",
-    Decimal("00.00"),
+    Decimal("0.00"),
 )
 
 customer_3 = Customer(
