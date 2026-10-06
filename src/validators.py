@@ -69,10 +69,6 @@ def validate_purchase_timestamp_utc(value: datetime) -> None:
     if value.tzinfo != timezone.utc:
      raise ValueError("Timestamp must be in UTC format.")
 
-def validate_record_exists(repository, record_id: int, name: str) -> None:
-   record_exists = [record for record in repository.get_all() if record.id == record_id]
-   if not record_exists:
-       raise ValueError(f"{name} does not exist.")
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
 def validate_record_exists(repository, record_id: int, name: str = "Record") -> None:
