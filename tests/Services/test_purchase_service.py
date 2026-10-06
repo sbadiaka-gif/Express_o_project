@@ -19,7 +19,6 @@ from src.models.purchase import Purchase
 from src.models.purchase_item import PurchaseItem
 
 
-
 class FakeCustomerService:
     def __init__(self):
         self.customer = Customer(name="Alice", email="alice@example.com")
@@ -90,9 +89,12 @@ def shop():
         ingredient_service=ingredient_service,
     )
 
-    milk = ingredient_repo.add(
+    milk = ingredient_service.add_ingredient(
         Ingredient(
-            name="Milk", purchasing_cost=Decimal("1.00"), unit_amount=Decimal("10.00"), unit_of_measure="kg",
+            name="Milk",
+            purchasing_cost=Decimal("1.00"),
+            unit_amount=Decimal("10.00"),
+            unit_of_measure="kg",
         )
     )
     drink = drink_service.add_drink(
@@ -120,14 +122,20 @@ class TestPurchaseADrink:
         )
 
         assert purchase.total_cost == Decimal("3.00")
-        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal("8.00")
+        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal(
+            "8.00"
+        )
         assert shop["customers"].get_by_email(
             "maria@example.com"
         ).lifetime_spent == Decimal("3.00")
 
     def test_reuses_returning_customer(self, shop):
-        shop["purchases"].purchase_a_drink("Maria", "maria@example.com", shop["drink_id"])
-        shop["purchases"].purchase_a_drink("Maria", "maria@example.com", shop["drink_id"])
+        shop["purchases"].purchase_a_drink(
+            "Maria", "maria@example.com", shop["drink_id"]
+        )
+        shop["purchases"].purchase_a_drink(
+            "Maria", "maria@example.com", shop["drink_id"]
+        )
 
         assert len(shop["customers"].get_customers()) == 1
         assert shop["customers"].get_by_email(
@@ -145,7 +153,9 @@ class TestPurchaseADrink:
                 "Maria", "maria@example.com", shop["drink_id"]
             )
 
-        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal("0.00")
+        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal(
+            "0.00"
+        )
 
     def test_unknown_drink_raises(self, shop):
         with pytest.raises(ValueError):

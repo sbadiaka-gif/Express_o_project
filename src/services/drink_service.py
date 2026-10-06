@@ -5,7 +5,7 @@
 
 from decimal import Decimal
 
-from src.exceptions import IngredientNotFoundError, InsufficientStockError
+from src.exceptions import IngredientNotFoundError
 from src.models.drink import Drink
 from src.models.recipe_item import RecipeItem
 from src.repositories.drink_repository import DrinkRepository
@@ -22,6 +22,9 @@ class DrinkService:
     def __init__(self, drink_repository: DrinkRepository, ingredient_service: IngredientService):
         self.drink_repository = drink_repository
         self.ingredient_service = ingredient_service
+
+    def get_by_id(self, drink_id: int) -> Drink | None:
+     return self.drink_repository.get_by_id(drink_id)
 
     def add_drink(self, drink: Drink) -> Drink:
         validate_name_not_empty(drink.name, "Drink name")
