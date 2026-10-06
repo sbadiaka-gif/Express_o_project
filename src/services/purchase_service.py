@@ -7,7 +7,11 @@ from decimal import Decimal
 
 from src.models.customer import Customer
 from src.models.purchase import Purchase
+from src.models.purchase_item import PurchaseItem
 from src.repositories.purchase_repository import PurchaseRepository
+from src.services.customer_service import CustomerService
+from src.services.drink_service import DrinkService
+from src.services.baked_good_service import BakedGoodService
 from src.validators import validate_purchase_timestamp_utc
 from src.exceptions import InsufficientStockError
 from src.models.purchase import Purchase, PurchaseItem
@@ -114,9 +118,12 @@ class PurchaseService:
     def _validate_purchase(self, purchase: Purchase) -> None:
         if purchase.customer_id is None:
             raise ValueError("Customer ID is required.")
-        if purchase.items is None or len(purchase.items) == 0:
+        if (
+            cast(list[PurchaseItem] | None, purchase.items) is None
+            or len(purchase.items) == 0
+        ):
             raise ValueError("Purchase must include at least one item.")
-        if purchase.timestamp is None:
+        if cast(datetime | None, purchase.timestamp) is None:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
@@ -161,7 +168,7 @@ class PurchaseService:
         if get_customer_method(customer_id) is None:
             raise ValueError("Customer does not exist.")
 
-    def _get_current_item_price(self, item):
+    def _get_current_item_price(self, item: PurchaseItem):
         if item.item_type == "drink":
             if self._drink_service is None:
                 raise ValueError("Drink service is required to price a drink purchase.")

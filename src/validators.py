@@ -7,6 +7,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 from src.repositories.drink_repository import DrinkRepository
+from src.repositories.repository import Repository
 
 
 # CHANGED: this validator now handles None safely before checking .strip().
@@ -21,6 +22,7 @@ def validate_money_decimal_positive_two_decimal_places(
     value: Decimal, name: str
 ) -> None:
     """Validate that a Decimal is non-negative and has at most two decimal places."""
+    error = []
     if not isinstance(value, Decimal):
       raise ValueError(f"{name} must be a Decimal type.")
 
@@ -33,10 +35,7 @@ def validate_money_decimal_positive_two_decimal_places(
         raise ValueError(", ".join(error))
 
 
-# CHANGE: added a default name parameter and kept the method consistent with the project validator style.
-def validate_markup_is_decimal_and_positive(
-    value: Decimal, name: str = "Markup"
-) -> None:
+def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is non-negative."""
 
     if not isinstance(value, Decimal):
@@ -71,7 +70,7 @@ def validate_purchase_timestamp_utc(value: datetime) -> None:
 
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
-def validate_record_exists(repository, record_id: int, name: str = "Record") -> None:
+def validate_record_exists[T](repository: Repository[T], record_id: int, name: str = "Record") -> None:
     """Validate that an item with the supplied id exists in the repository."""
     record_exists = [
         record for record in repository.get_all() if record.id == record_id

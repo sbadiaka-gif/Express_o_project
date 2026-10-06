@@ -24,7 +24,7 @@ class BakedGoodService:
         self.validate_is_unique(baked_good)
         return self._repository.add(baked_good)
 
-    def get_baked_goods(self, id: int) -> list[BakedGood]:
+    def get_baked_goods(self) -> list[BakedGood]:
         return self._repository.get_all()
 
     def get_baked_good(self, id: int) -> BakedGood:
