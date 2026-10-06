@@ -7,6 +7,7 @@
 from datetime import datetime
 from decimal import Decimal
 from src.repositories.drink_repository import DrinkRepository
+from src.repositories.repository import Repository
 
 
 # CHANGED: this validator now handles None safely before checking .strip().
@@ -73,7 +74,7 @@ def validate_record_exists(repository, record_id: int, name: str) -> None:
        raise ValueError(f"{name} does not exist.")
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
-def validate_record_exists(repository, record_id: int, name: str = "Record") -> None:
+def validate_record_exists[T](repository: Repository[T], record_id: int, name: str = "Record") -> None:
     """Validate that an item with the supplied id exists in the repository."""
     record_exists = [
         record for record in repository.get_all() if record.id == record_id
