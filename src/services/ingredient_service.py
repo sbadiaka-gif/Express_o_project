@@ -53,7 +53,7 @@ class IngredientService:
         ingredient = self.ingredient_repository.get_by_id(ingredient_id)
         return ingredient.unit_amount >= required_amount
 
-    def deduct_ingredient_amount(self, ingredient_id, amount: Decimal) -> None:
+    def deduct_ingredient_amount(self, ingredient_id: int, amount: Decimal) -> None:
         """Deduct a specified amount from the ingredient's unit_amount."""
         validate_record_exists(self.ingredient_repository, ingredient_id, "Ingredient")
         validate_money_decimal_positive_two_decimal_places(amount, "Amount")

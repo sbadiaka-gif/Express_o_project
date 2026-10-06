@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage = false
+
 from decimal import Decimal
 
 from src.models.baked_good import BakedGood
@@ -57,23 +59,83 @@ def test_add_returns_object():
 def test_add_saves_object():
     test_repository = BakedGoodRepository()
     test_repository.add(baked_good_1)
-    assert (
-        test_repository._baked_goods[1]  # pyright: ignore[reportPrivateUsage]
-        == baked_good_1
-    )
+    assert test_repository._baked_goods[0] == baked_good_1
 
 
-def test_get_by_id():
-    pass
+def test_get_by_id_gets():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    assert test_repository.get_by_id(1)
 
 
-def test_get_all():
-    pass
+def test_get_by_id_gets_none_when_no_items():
+    test_repository = BakedGoodRepository()
+    assert not test_repository.get_by_id(1)
 
 
-def test_update():
-    pass
+def test_get_by_id_gets_none_when_id_missing():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    assert not test_repository.get_by_id(0)
 
 
-def test_delete():
-    pass
+def test_get_all_gets_none_when_no_items():
+    test_repository = BakedGoodRepository()
+    assert test_repository.get_all() == []
+
+
+def test_get_all_gets_all():
+    test_repository = BakedGoodRepository()
+    test_repository._baked_goods.append(baked_good_1)
+    test_repository._baked_goods.append(baked_good_2)
+    assert test_repository.get_all()
+
+
+def test_update_returns_item():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    baked_good_2.id = 2
+    test_repository._baked_goods.append(baked_good_2)
+    assert test_repository.update(2, baked_good_3) == baked_good_3
+
+
+def test_update_returns_none_missing_id():
+    test_repository = BakedGoodRepository()
+    assert not test_repository.update(1, baked_good_1)
+
+
+def test_update_updates_item():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    baked_good_2.id = 2
+    test_repository._baked_goods.append(baked_good_2)
+    test_repository.update(2, baked_good_3)
+    assert test_repository._baked_goods[1] == baked_good_3
+
+
+def test_delete_returns_true_on_remove():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    baked_good_2.id = 2
+    test_repository._baked_goods.append(baked_good_2)
+    assert test_repository.delete(1)
+
+
+def test_delete_returns_false_on_not_remove():
+    test_repository = BakedGoodRepository()
+    assert not test_repository.delete(1)
+
+
+def test_delete_removes_item():
+    test_repository = BakedGoodRepository()
+    baked_good_1.id = 1
+    test_repository._baked_goods.append(baked_good_1)
+    baked_good_2.id = 2
+    test_repository._baked_goods.append(baked_good_2)
+    test_repository.delete(2)
+    assert len(test_repository._baked_goods) == 1
