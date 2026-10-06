@@ -12,6 +12,7 @@ from src.services.customer_service import CustomerService
 from src.services.drink_service import DrinkService
 from src.services.baked_good_service import BakedGoodService
 from src.validators import validate_purchase_timestamp_utc
+from src.exceptions import CustomerLifetimeSpentIsIncorrectError
 
 
 class PurchaseService:
@@ -118,6 +119,22 @@ class PurchaseService:
 
         if get_customer_method(customer_id) is None:
             raise ValueError("Customer does not exist.")
+
+    def _validate_customer_lifetime_spent(self, customer_id: int):
+        purchases = self.get_all()
+        purchase_totals: list[Decimal] = [
+            purchase.total_cost
+            for purchase in purchases
+            if purchase.customer_id == customer_id
+        ]
+        calculated_lifetime_spent = sum(purchase_totals)
+
+        assert self._customer_service is not None
+        customer = self._customer_service.get_customer(customer_id)
+        if customer.lifetime_spent != calculated_lifetime_spent:
+            raise CustomerLifetimeSpentIsIncorrectError(
+                f"Customer by id '{customer_id}' lifetime spent is incorrect."
+            )
 
     def _get_current_item_price(self, item: PurchaseItem):
         if item.item_type == "drink":
