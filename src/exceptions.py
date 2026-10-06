@@ -33,6 +33,10 @@ class CustomerNotFoundError(Exception):
     pass
 
 
+class CustomerLifetimeSpentIsIncorrectError(Exception):
+    pass
+
+
 class InsufficientStockError(Exception):
     """Raised when there isn't enough of an ingredient to fulfill an order."""
 
