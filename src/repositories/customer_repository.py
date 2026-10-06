@@ -41,3 +41,4 @@ class CustomerRepository(Repository[Customer]):
                 del self._customers[index]
                 return True
         return False
+

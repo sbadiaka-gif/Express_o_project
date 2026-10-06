@@ -122,7 +122,11 @@ class PurchaseService:
             raise ValueError("Customer ID is required.")
         if not purchase.items:
             raise ValueError("Purchase must include at least one item.")
+<<<<<<< HEAD
         if not purchase.timestamp:
+=======
+        if purchase.timestamp is None:
+>>>>>>> db0df7b52156e5c8a98888086b7e9c8250f3d3e0
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
