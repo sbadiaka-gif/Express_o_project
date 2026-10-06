@@ -3,7 +3,7 @@
 # CHANGED: import style kept aligned with the project package naming conventions.
 from src.models.baked_good import BakedGood
 from copy import deepcopy
-from repository import Repository
+from src.repositories.repository import Repository
 
 
 class BakedGoodRepository(Repository[BakedGood]):

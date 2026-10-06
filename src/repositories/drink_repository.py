@@ -2,7 +2,7 @@
 
 from src.models.drink import Drink
 from copy import deepcopy
-from repository import Repository
+from src.repositories.repository import Repository
 
 
 class DrinkRepository(Repository[Drink]):

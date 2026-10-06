@@ -3,7 +3,7 @@
 # CHANGED: repository imports kept in a project-structured format and are documented for clarity.
 from src.models.customer import Customer
 from copy import deepcopy
-from repository import Repository
+from src.repositories.repository import Repository
 
 
 class CustomerRepository(Repository[Customer]):

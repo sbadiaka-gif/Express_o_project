@@ -3,7 +3,7 @@
 # CHANGED: import kept consistent with project style and repository behavior is documented inline.
 import copy
 from src.models.purchase import Purchase
-from repository import Repository
+from src.repositories.repository import Repository
 
 
 class PurchaseRepository(Repository[Purchase]):

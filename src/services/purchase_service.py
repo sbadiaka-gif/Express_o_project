@@ -118,12 +118,9 @@ class PurchaseService:
     def _validate_purchase(self, purchase: Purchase) -> None:
         if purchase.customer_id is None:
             raise ValueError("Customer ID is required.")
-        if (
-            cast(list[PurchaseItem] | None, purchase.items) is None
-            or len(purchase.items) == 0
-        ):
+        if not purchase.items:
             raise ValueError("Purchase must include at least one item.")
-        if cast(datetime | None, purchase.timestamp) is None:
+        if purchase.timestamp is None:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
@@ -139,7 +136,6 @@ class PurchaseService:
                 raise ValueError("Item type must be 'drink' or 'baked_good'.")
 
             item.unit_price = self._get_current_item_price(item)
-
     def _calculate_total_cost(self, purchase: Purchase) -> Decimal:
         total_cost = Decimal("0.00")
         for item in purchase.items:

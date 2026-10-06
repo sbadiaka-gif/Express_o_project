@@ -3,7 +3,7 @@
 # CHANGED: import ordering kept consistent with the project package structure.
 from src.models.ingredient import Ingredient
 from copy import deepcopy
-from repository import Repository
+from src.repositories.repository import Repository
 
 
 class IngredientRepository(Repository[Ingredient]):
