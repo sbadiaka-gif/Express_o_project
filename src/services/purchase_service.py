@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from src.models.customer import Customer
 from src.models.purchase import Purchase
 from src.models.purchase_item import PurchaseItem
 from src.repositories.purchase_repository import PurchaseRepository
@@ -13,6 +14,8 @@ from src.services.drink_service import DrinkService
 from src.services.baked_good_service import BakedGoodService
 from src.validators import validate_purchase_timestamp_utc
 from src.exceptions import CustomerLifetimeSpentIsIncorrectError
+from src.exceptions import InsufficientStockError
+from src.models.purchase import Purchase, PurchaseItem
 
 
 class PurchaseService:
@@ -21,14 +24,16 @@ class PurchaseService:
     def __init__(
         self,
         repository: PurchaseRepository,
-        customer_service: CustomerService | None = None,
-        drink_service: DrinkService | None = None,
-        baked_good_service: BakedGoodService | None = None,
+        customer_service=None,
+        drink_service=None,
+        baked_good_service=None,
+        ingredient_service=None,
     ):
         self._repository = repository
         self._customer_service = customer_service
         self._drink_service = drink_service
         self._baked_good_service = baked_good_service
+        self._ingredient_service = ingredient_service
 
     def get_all(self) -> list[Purchase]:
         return self._repository.get_all()
@@ -47,6 +52,47 @@ class PurchaseService:
             record_purchase = getattr(self._customer_service, "record_purchase", None)
             if callable(record_purchase):
                 record_purchase(purchase.customer_id, created_purchase.total_cost)
+
+        return created_purchase
+
+    def purchase_a_drink(self, name: str, email: str, drink_id: int) -> Purchase:
+        """Sell one drink to a new customer, record the sale, and deduct stock."""
+        drink = self._drink_service.get_by_id(drink_id)
+        if drink is None:
+            raise ValueError("Drink does not exist.")
+
+        for recipe_item in drink.recipe:
+            if not self._ingredient_service.is_ingredient_amount_sufficient(
+                recipe_item.ingredient_id, recipe_item.quantity
+            ):
+                raise InsufficientStockError(
+                    f"Not enough stock for ingredient id {recipe_item.ingredient_id}."
+                )
+
+        customer = self._customer_service.get_by_email(email)
+        if customer is None:
+            customer = self._customer_service.create_customer(
+                Customer(name=name, email=email)
+            )
+
+        purchase = Purchase(
+            customer_id=customer.id,
+            timestamp=datetime.now(timezone.utc),
+            items=[
+                PurchaseItem(
+                    item_type="drink",
+                    item_id=drink_id,
+                    quantity=1,
+                    unit_price=drink.sale_price,
+                )
+            ],
+        )
+        created_purchase = self.create_purchase(purchase)
+
+        for recipe_item in drink.recipe:
+            self._ingredient_service.deduct_ingredient_amount(
+                recipe_item.ingredient_id, recipe_item.quantity
+            )
 
         return created_purchase
 
@@ -75,7 +121,7 @@ class PurchaseService:
             raise ValueError("Customer ID is required.")
         if not purchase.items:
             raise ValueError("Purchase must include at least one item.")
-        if not purchase.timestamp:
+        if purchase.timestamp is None:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
@@ -91,7 +137,6 @@ class PurchaseService:
                 raise ValueError("Item type must be 'drink' or 'baked_good'.")
 
             item.unit_price = self._get_current_item_price(item)
-
     def _calculate_total_cost(self, purchase: Purchase) -> Decimal:
         total_cost = Decimal("0.00")
         for item in purchase.items:
