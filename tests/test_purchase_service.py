@@ -1,12 +1,23 @@
-from datetime import datetime, timezone
 from decimal import Decimal
+from datetime import datetime, timezone
+import pytest
 
-from src.models.customer import Customer
+from src.exceptions import InsufficientStockError
 from src.models.drink import Drink
+from src.models.ingredient import Ingredient
+from src.models.recipe_item import RecipeItem
+from src.repositories.customer_repository import CustomerRepository
+from src.repositories.drink_repository import DrinkRepository
+from src.repositories.ingredient_repository import IngredientRepository
+from src.repositories.purchase_repository import PurchaseRepository
+from src.services.customer_service import CustomerService
+from src.services.drink_service import DrinkService
+from src.services.ingredient_service import IngredientService
+from src.services.purchase_service import PurchaseService
+from src.models.customer import Customer
 from src.models.purchase import Purchase
 from src.models.purchase_item import PurchaseItem
-from src.repositories.purchase_repository import PurchaseRepository
-from src.services.purchase_service import PurchaseService
+
 
 
 class FakeCustomerService:
@@ -64,3 +75,78 @@ def test_create_purchase_sets_total_and_records_customer_spend():
     assert created.items[0].unit_price == Decimal("5.00")
     assert customer_service.recorded == [(1, Decimal("10.00"))]
     assert created.id == 1
+
+
+@pytest.fixture
+def shop():
+    ingredient_repo = IngredientRepository()
+    ingredient_service = IngredientService(ingredient_repo)
+    drink_service = DrinkService(DrinkRepository(), ingredient_service)
+    customer_service = CustomerService(CustomerRepository())
+    purchase_service = PurchaseService(
+        PurchaseRepository(),
+        customer_service=customer_service,
+        drink_service=drink_service,
+        ingredient_service=ingredient_service,
+    )
+
+    milk = ingredient_repo.add(
+        Ingredient(
+            name="Milk", purchasing_cost=Decimal("1.00"), unit_amount=Decimal("10.00"), unit_of_measure="kg",
+        )
+    )
+    drink = drink_service.add_drink(
+        Drink(
+            name="Latte",
+            recipe=[RecipeItem(ingredient_id=milk.id, quantity=Decimal("2.00"))],
+            markup_percentage=Decimal("0.50"),
+            cost_to_produce=Decimal("2.00"),
+            sale_price=Decimal("3.00"),
+        )
+    )
+    return {
+        "purchases": purchase_service,
+        "ingredients": ingredient_repo,
+        "customers": customer_service,
+        "milk_id": milk.id,
+        "drink_id": drink.id,
+    }
+
+
+class TestPurchaseADrink:
+    def test_records_sale_and_deducts_stock(self, shop):
+        purchase = shop["purchases"].purchase_a_drink(
+            "Maria", "maria@example.com", shop["drink_id"]
+        )
+
+        assert purchase.total_cost == Decimal("3.00")
+        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal("8.00")
+        assert shop["customers"].get_by_email(
+            "maria@example.com"
+        ).lifetime_spent == Decimal("3.00")
+
+    def test_reuses_returning_customer(self, shop):
+        shop["purchases"].purchase_a_drink("Maria", "maria@example.com", shop["drink_id"])
+        shop["purchases"].purchase_a_drink("Maria", "maria@example.com", shop["drink_id"])
+
+        assert len(shop["customers"].get_customers()) == 1
+        assert shop["customers"].get_by_email(
+            "maria@example.com"
+        ).lifetime_spent == Decimal("6.00")
+
+    def test_insufficient_stock_changes_nothing(self, shop):
+        for _ in range(5):  # 5 lattes use all 10 milk
+            shop["purchases"].purchase_a_drink(
+                "Maria", "maria@example.com", shop["drink_id"]
+            )
+
+        with pytest.raises(InsufficientStockError):
+            shop["purchases"].purchase_a_drink(
+                "Maria", "maria@example.com", shop["drink_id"]
+            )
+
+        assert shop["ingredients"].get_by_id(shop["milk_id"]).unit_amount == Decimal("0.00")
+
+    def test_unknown_drink_raises(self, shop):
+        with pytest.raises(ValueError):
+            shop["purchases"].purchase_a_drink("Maria", "maria@example.com", 999)

@@ -26,6 +26,12 @@ class CustomerService:
         self.validate_email_unique(customer.email)
         return self._repository.add(customer)
 
+    def get_by_email(self, email: str) -> Customer | None:
+        for customer in self._repository.get_all():
+            if customer.email == email:
+                return customer
+        return None
+    
     # CHANGED: added `customer_id` to email uniqueness check so updating the same customer does not fail.
     def update_customer(self, id: int, customer: Customer) -> Customer:
         self.validate_customer_exists(id)
