@@ -15,15 +15,11 @@ from src.validators import (
     validate_money_decimal_positive_two_decimal_places,
     validate_name_not_empty,
 )
-from src.services.purchase_service import PurchaseService
 
 
 class CustomerService:
-    def __init__(
-        self, repository: CustomerRepository, purchase_service: PurchaseService
-    ):
+    def __init__(self, repository: CustomerRepository):
         self._repository = repository
-        self._purchase_service = purchase_service
 
     def create_customer(self, customer: Customer) -> Customer:
         self.validate_customer(customer)
