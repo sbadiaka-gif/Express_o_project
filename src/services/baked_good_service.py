@@ -15,31 +15,38 @@ class BakedGoodService:
         self._repository = repository
 
     def create_baked_good(self, baked_good: BakedGood) -> BakedGood:
+        """Create a baked good and add it to our baked good repository."""
         self._validate_baked_good(baked_good)
         self._validate_is_unique(baked_good)
         return self._repository.add(baked_good)
 
     def get_baked_goods(self) -> list[BakedGood]:
+        """Get all of the baked goods in our baked good repository."""
         return self._repository.get_all()
 
     def get_baked_good(self, id: int) -> BakedGood:
+        """Get baked good by id."""
         self._validate_baked_good_exists(id)
         return cast(BakedGood, self._repository.get_by_id(id))
 
     def get_baked_good_by_id(self, baked_good_id: int) -> BakedGood | None:
+        """Get baked good by id, proxy to the baked good repository."""
         return self._repository.get_by_id(baked_good_id)
 
     def update_baked_good(self, id: int, baked_good: BakedGood) -> BakedGood:
+        """Update baked good with a id."""
         self._validate_baked_good_exists(id)
         self._validate_baked_good(baked_good)
         self._validate_is_unique(baked_good)
         return cast(BakedGood, self._repository.update(id, baked_good))
 
     def remove_baked_good(self, id: int):
+        """Remove baked good at the given id."""
         self._validate_baked_good_exists(id)
         self._repository.delete(id)
 
     def _validate_baked_good(self, baked_good: BakedGood):
+        """Validate baked good properties."""
         validate_name_not_empty(baked_good.name, "name")
         validate_money_decimal_positive_two_decimal_places(
             baked_good.purchasing_cost, "purchasing_cost"
@@ -51,15 +58,18 @@ class BakedGoodService:
         validate_name_not_empty(baked_good.vendor_name, "vendor_name")
 
     def _validate_baked_good_exists(self, id: int):
+        """Validate the baked good exists in our baked good repository."""
         baked_good = self._repository.get_by_id(id)
         if baked_good is None:
             raise BakedGoodNotFoundError(f"Baked good by id '{id}' not found.")
 
     def _validate_allergens(self, allergens: list[str]):
+        """Validate a list of allergies."""
         for allergen in allergens:
             validate_name_not_empty(allergen, "allergen")
 
     def _validate_is_unique(self, new_baked_good: BakedGood):
+        """Validate that a baked good is unique in the baked good repository."""
         for baked_good in self._repository.get_all():
             if (
                 baked_good.name == new_baked_good.name
