@@ -22,28 +22,28 @@ def validate_money_decimal_positive_two_decimal_places(
     value: Decimal, name: str
 ) -> None:
     """Validate that a Decimal is non-negative and has at most two decimal places."""
-    error = []
-    if not value is Decimal:
-        raise ValueError(f"{name} must be a Decimal type.")
+    error: list[str] = []
 
-    error = []
+    if not type(value) is Decimal:
+        error.append(f"{name} must be a Decimal type.")
     if value < 0:
         error.append(f"{name} must be a positive number.")
     if value.as_tuple().exponent < -2:
         error.append(f"{name} must have at most two decimal places.")
+
     if error:
         raise ValueError(", ".join(error))
 
 
 def validate_markup_is_decimal_and_positive(value: Decimal, name: str) -> None:
     """Validate that a decimal is non-negative."""
+    error: list[str] = []
 
-    if not value is Decimal:
-        raise ValueError(f"{name} must be a Decimal type.")
-    error = []
-
+    if not type(value) is Decimal:
+        error.append(f"{name} must be a Decimal type.")
     if value < 0:
         error.append(f"{name} must be a positive number.")
+
     if error:
         raise ValueError(" ".join(error))
 
