@@ -4,7 +4,7 @@
 # rejected valid zeros or used incorrect import paths. The updated version keeps one shared validator
 # definition and validates money as non-negative instead of strictly positive.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from src.repositories.drink_repository import DrinkRepository
 from src.repositories.repository import Repository
@@ -65,13 +65,9 @@ def validate_drink_name_unique(drink_repository: DrinkRepository, name: str) -> 
 # CHANGE: replaced the old timezone check with a UTC offset check that works correctly for timezone-aware datetimes.
 def validate_purchase_timestamp_utc(value: datetime) -> None:
     """Validate that a timestamp is in UTC format."""
-    if value.tzinfo != datetime.timezone.utc:
-        raise ValueError("Timestamp must be in UTC format.")
+    if value.tzinfo != timezone.utc:
+     raise ValueError("Timestamp must be in UTC format.")
 
-def validate_record_exists(repository, record_id: int, name: str) -> None:
-   record_exists = [record for record in repository.get_all() if record.id == record_id]
-   if not record_exists:
-       raise ValueError(f"{name} does not exist.")
 
 # CHANGE: kept only one shared implementation of validate_record_exists and added a default name for cleaner error messages.
 def validate_record_exists[T](repository: Repository[T], record_id: int, name: str = "Record") -> None:
