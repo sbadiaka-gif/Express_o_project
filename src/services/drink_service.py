@@ -47,7 +47,7 @@ class DrinkService:
     def change_drink_price(self, drink_id: int, new_sale_price: Decimal) -> None:
         drink = self._validate_and_get_drink(drink_id, new_sale_price, "New sale price")
         drink.sale_price = new_sale_price
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def change_drink_markup(
         self, drink_id: int, new_markup_percentage: Decimal
@@ -56,7 +56,7 @@ class DrinkService:
             drink_id, new_markup_percentage, "New markup percentage"
         )
         drink.markup_percentage = new_markup_percentage
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def change_cost_to_produce(
         self, drink_id: int, new_cost_to_produce: Decimal
@@ -65,7 +65,7 @@ class DrinkService:
             drink_id, new_cost_to_produce, "New cost to produce"
         )
         drink.cost_to_produce = new_cost_to_produce
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def change_drink_recipe(
         self, drink_id: int, new_recipe_items: list[RecipeItem]
@@ -78,7 +78,7 @@ class DrinkService:
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe = new_recipe_items
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def add_to_drink_recipe(self, drink_id: int, recipe_item: RecipeItem) -> None:
         """Add a single ingredient to a drink's recipe definition. Does not affect ingredient stock."""
@@ -97,7 +97,7 @@ class DrinkService:
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe.extend(recipe_items)
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def remove_recipe_items(self, drink_id: int, ingredient_ids: list[int]) -> None:
         """Remove multiple ingredients from a drink's recipe definition. Does not affect ingredient stock."""
@@ -112,7 +112,7 @@ class DrinkService:
                 "No matching ingredients found in the recipe to remove."
             )
 
-        self.drink_repository.update(drink)
+        self.drink_repository.update(drink.id, drink)
 
     def _validate_and_get_drink(
         self, drink_id: int, new_value: Decimal, value_name: str
