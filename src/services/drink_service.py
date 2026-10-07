@@ -19,19 +19,27 @@ from src.validators import (
 
 
 class DrinkService:
-    def __init__(self, drink_repository: DrinkRepository, ingredient_service: IngredientService):
+    def __init__(
+        self, drink_repository: DrinkRepository, ingredient_service: IngredientService
+    ):
         self.drink_repository = drink_repository
         self.ingredient_service = ingredient_service
 
     def get_by_id(self, drink_id: int) -> Drink | None:
-     return self.drink_repository.get_by_id(drink_id)
+        return self.drink_repository.get_by_id(drink_id)
 
     def add_drink(self, drink: Drink) -> Drink:
         validate_name_not_empty(drink.name, "Drink name")
         validate_drink_name_unique(self.drink_repository, drink.name)
-        validate_money_decimal_positive_two_decimal_places(drink.markup_percentage, "Markup percentage")
-        validate_money_decimal_positive_two_decimal_places(drink.cost_to_produce, "Cost to produce")
-        validate_money_decimal_positive_two_decimal_places(drink.sale_price, "Sale price")
+        validate_money_decimal_positive_two_decimal_places(
+            drink.markup_percentage, "Markup percentage"
+        )
+        validate_money_decimal_positive_two_decimal_places(
+            drink.cost_to_produce, "Cost to produce"
+        )
+        validate_money_decimal_positive_two_decimal_places(
+            drink.sale_price, "Sale price"
+        )
 
         self.drink_repository.add(drink)
         return drink
@@ -64,7 +72,9 @@ class DrinkService:
     ) -> None:
         """Replace a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in new_recipe_items:
-            self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
+            self.ingredient_service.validate_ingredient_exists(
+                recipe_item.ingredient_id
+            )
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe = new_recipe_items
@@ -81,7 +91,9 @@ class DrinkService:
     def add_recipe_items(self, drink_id: int, recipe_items: list[RecipeItem]) -> None:
         """Add multiple ingredients to a drink's recipe definition. Does not affect ingredient stock."""
         for recipe_item in recipe_items:
-            self.ingredient_service.validate_ingredient_exists(recipe_item.ingredient_id)
+            self.ingredient_service.validate_ingredient_exists(
+                recipe_item.ingredient_id
+            )
 
         drink = self._validate_and_get_drink_only(drink_id)
         drink.recipe.extend(recipe_items)

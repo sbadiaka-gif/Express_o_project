@@ -12,7 +12,9 @@ from src.repositories.purchase_repository import PurchaseRepository
 from src.services.customer_service import CustomerService
 from src.services.drink_service import DrinkService
 from src.services.baked_good_service import BakedGoodService
+from src.services.ingredient_service import IngredientService
 from src.validators import validate_purchase_timestamp_utc
+from src.exceptions import CustomerLifetimeSpentIsIncorrectError
 from src.exceptions import InsufficientStockError
 from src.models.purchase import Purchase, PurchaseItem
 
@@ -23,10 +25,10 @@ class PurchaseService:
     def __init__(
         self,
         repository: PurchaseRepository,
-        customer_service=None,
-        drink_service=None,
-        baked_good_service=None,
-        ingredient_service=None,
+        customer_service: CustomerService | None = None,
+        drink_service: DrinkService | None = None,
+        baked_good_service: BakedGoodService | None = None,
+        ingredient_service: IngredientService | None = None,
     ):
         self._repository = repository
         self._customer_service = customer_service
@@ -120,7 +122,7 @@ class PurchaseService:
             raise ValueError("Customer ID is required.")
         if not purchase.items:
             raise ValueError("Purchase must include at least one item.")
-        if purchase.timestamp is None:
+        if not purchase.timestamp:
             purchase.timestamp = datetime.now(timezone.utc)
         else:
             validate_purchase_timestamp_utc(purchase.timestamp)
@@ -136,6 +138,7 @@ class PurchaseService:
                 raise ValueError("Item type must be 'drink' or 'baked_good'.")
 
             item.unit_price = self._get_current_item_price(item)
+
     def _calculate_total_cost(self, purchase: Purchase) -> Decimal:
         total_cost = Decimal("0.00")
         for item in purchase.items:
@@ -163,6 +166,22 @@ class PurchaseService:
 
         if get_customer_method(customer_id) is None:
             raise ValueError("Customer does not exist.")
+
+    def _validate_customer_lifetime_spent(self, customer_id: int):
+        purchases = self.get_all()
+        purchase_totals: list[Decimal] = [
+            purchase.total_cost
+            for purchase in purchases
+            if purchase.customer_id == customer_id
+        ]
+        calculated_lifetime_spent = sum(purchase_totals)
+
+        assert self._customer_service is not None
+        customer = self._customer_service.get_customer(customer_id)
+        if customer.lifetime_spent != calculated_lifetime_spent:
+            raise CustomerLifetimeSpentIsIncorrectError(
+                f"Customer by id '{customer_id}' lifetime spent is incorrect."
+            )
 
     def _get_current_item_price(self, item: PurchaseItem):
         if item.item_type == "drink":

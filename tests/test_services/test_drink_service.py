@@ -111,9 +111,15 @@ class TestDrinkService:
 
     def test_change_drink_recipe_replaces_recipe(self, setup):
         drink = setup["service"].add_drink(
-            make_drink(recipe=[RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))])
+            make_drink(
+                recipe=[
+                    RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))
+                ]
+            )
         )
-        new_recipe = [RecipeItem(ingredient_id=setup["espresso_id"], quantity=Decimal("1.00"))]
+        new_recipe = [
+            RecipeItem(ingredient_id=setup["espresso_id"], quantity=Decimal("1.00"))
+        ]
         setup["service"].change_drink_recipe(drink.id, new_recipe)
 
         recipe = setup["service"].get_by_id(drink.id).recipe
@@ -129,7 +135,8 @@ class TestDrinkService:
     def test_add_to_drink_recipe_appends(self, setup):
         drink = setup["service"].add_drink(make_drink())
         setup["service"].add_to_drink_recipe(
-            drink.id, RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))
+            drink.id,
+            RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00")),
         )
 
         recipe = setup["service"].get_by_id(drink.id).recipe
@@ -142,7 +149,9 @@ class TestDrinkService:
             drink.id,
             [
                 RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00")),
-                RecipeItem(ingredient_id=setup["espresso_id"], quantity=Decimal("1.00")),
+                RecipeItem(
+                    ingredient_id=setup["espresso_id"], quantity=Decimal("1.00")
+                ),
             ],
         )
 
@@ -152,8 +161,12 @@ class TestDrinkService:
         drink = setup["service"].add_drink(
             make_drink(
                 recipe=[
-                    RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00")),
-                    RecipeItem(ingredient_id=setup["espresso_id"], quantity=Decimal("1.00")),
+                    RecipeItem(
+                        ingredient_id=setup["milk_id"], quantity=Decimal("2.00")
+                    ),
+                    RecipeItem(
+                        ingredient_id=setup["espresso_id"], quantity=Decimal("1.00")
+                    ),
                 ]
             )
         )
@@ -164,7 +177,11 @@ class TestDrinkService:
 
     def test_remove_missing_ingredient_raises(self, setup):
         drink = setup["service"].add_drink(
-            make_drink(recipe=[RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))])
+            make_drink(
+                recipe=[
+                    RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))
+                ]
+            )
         )
         with pytest.raises(IngredientNotFoundError):
             setup["service"].remove_from_drink_recipe(drink.id, setup["espresso_id"])
@@ -172,7 +189,10 @@ class TestDrinkService:
     def test_recipe_edits_do_not_change_stock(self, setup):
         drink = setup["service"].add_drink(make_drink())
         setup["service"].add_to_drink_recipe(
-            drink.id, RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00"))
+            drink.id,
+            RecipeItem(ingredient_id=setup["milk_id"], quantity=Decimal("2.00")),
         )
 
-        assert setup["ingredients"].get_by_id(setup["milk_id"]).unit_amount == Decimal("10.00")
+        assert setup["ingredients"].get_by_id(setup["milk_id"]).unit_amount == Decimal(
+            "10.00"
+        )
